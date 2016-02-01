@@ -36,6 +36,19 @@ describe('aws adapter', function() {
         Juttle.adapters.register(adapter.name, adapter);
     });
 
+    describe(' properly returns an error for invalid arguments like', function() {
+
+        it(' a -from in the past', function() {
+            return check_juttle({
+                program: 'read aws -from :1 day ago: -to :now: product="EC2" | view table'
+            })
+            .catch(function(err) {
+                expect(err.code).to.equal('RT-ADAPTER-UNSUPPORTED-TIME-OPTION');
+            });
+        });
+
+    });
+
     it(' can read basic info', function() {
         this.timeout(60000);
         return check_juttle({
