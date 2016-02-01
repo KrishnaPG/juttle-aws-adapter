@@ -17,18 +17,18 @@ describe('aws adapter', function() {
         // source files.
 
         var config = read_config();
+        var aws_config;
 
-        if (! _.has(config, "adapters")) {
+        if (_.has(config, "adapters") &&
+            _.has(config.adapters, "aws")) {
+            aws_config = config.adapters.aws;
+        } else {
+
             if (! _.has(process.env, "JUTTLE_AWS_CONFIG") ||
                 process.env.JUTTLE_AWS_CONFIG === '') {
                 throw new Error("To run this test, you must provide the adapter config via the environment as JUTTLE_AWS_CONFIG.");
             }
-            var aws_config = JSON.parse(process.env.JUTTLE_AWS_CONFIG);
-            config = {
-                adapters: {
-                    aws: aws_config
-                }
-            };
+            aws_config = JSON.parse(process.env.JUTTLE_AWS_CONFIG);
         }
 
         var adapter = AWSAdapter(config.adapters.aws, Juttle);
@@ -40,7 +40,7 @@ describe('aws adapter', function() {
 
         it(' a -from in the past', function() {
             return check_juttle({
-                program: 'read aws -from :1 day ago: -to :now: product="EC2" | view table'
+                program: 'read aws -from :1 day ago: -to :now: | view table'
             })
             .catch(function(err) {
                 expect(err.code).to.equal('RT-ADAPTER-UNSUPPORTED-TIME-OPTION');
@@ -52,7 +52,7 @@ describe('aws adapter', function() {
     it(' can read basic info', function() {
         this.timeout(60000);
         return check_juttle({
-            program: 'read aws -from :now: -to :now: product="EC2" | view table'
+            program: 'read aws -from :now: -to :now: | view table'
         })
         .then(function(result) {
             expect(result.errors).to.have.length(0);
