@@ -1,0 +1,180 @@
+// Categorize the points by the field with name 'cat_field'.
+sub add_demo(demo, field) {
+    reduce time=last(time), product=last(product), value=count(), demographic=demo, name=*field, metric_type='AWS Demographic' by field
+        | remove field;
+}
+
+// Aggregate the points by the field with name 'field' via a sum().
+sub add_agg(agg, field) {
+    reduce time=last(time), product=last(product), value=sum(field), aggregate=agg, name='total', metric_type='AWS Aggregate';
+}
+
+// We filter by product both before and after as the reduce()s will
+// return 0 counts when there are no points.  Also, the aggregations
+// use a very short batch window of 1 second. This works because the
+// adapter assigns the same timestamp to all points for a given call
+// to poll().
+export sub aggregate_AutoScaling() {
+    filter product='AutoScaling'
+    | (
+        // Let all events through
+        filter event_type ~ "*";
+
+        // For non-events, perform these aggregations
+        filter event_type !~ "*"
+        |  batch -every :1s:
+        | (
+            put one=1                         | add_agg  -agg 'AutoScaling Group Count'                  -field 'one';
+            put len=Array.length(Instances)   | add_agg  -agg 'AutoScaling Group Total Size'             -field 'len';
+                                                add_agg  -agg 'AutoScaling Group Total Desired Capacity' -field 'DesiredCapacity';
+                                                add_demo -demo 'AutoScaling Desired Capacity'            -field 'DesiredCapacity';
+            put len = Array.length(Instances) | add_demo -demo 'AutoScaling Current Group Size'          -field 'len';
+                                                add_demo -demo 'AutoScaling Health Check Type'           -field 'HealthCheckType';
+        )
+      )
+    | filter product='AutoScaling'
+}
+
+export sub aggregate_CloudFront() {
+    filter product='CloudFront'
+    | (
+        filter event_type ~ "*";
+        filter event_type !~ "*"
+        |  batch -every :1s:
+        | (
+            put one=1                                   | add_agg  -agg 'CF Distribution Count' -field 'one';
+                                                          add_demo -demo 'CF Status'            -field 'Status';
+            put pclass=DistributionConfig["PriceClass"] | add_demo -demo 'CF Price Class'       -field 'pclass';
+            put enabled=DistributionConfig["Enabled"]   | add_demo -demo 'CF Enabled' -field 'enabled';
+        )
+    )
+    | filter product='CloudFront'
+}
+
+export sub aggregate_EBS() {
+    filter product='EBS'
+    | (
+        filter event_type ~ "*";
+        filter event_type !~ "*"
+        |  batch -every :1s:
+        | (
+            put one=1                           | add_agg  -agg 'EBS Volume Count'           -field 'one';
+                                                  add_agg  -agg 'EBS Volume Total Size'      -field 'Size';
+                                                  add_agg  -agg 'EBS Volume Total Iops'      -field 'Iops';
+                                                  add_demo -demo 'EBS Volume State'          -field 'State';
+                                                  add_demo -demo 'EBS Volume Type'           -field 'VolumeType';
+            put status = VolumeStatus["Status"] | add_demo -demo 'EBS Volume Status'         -field 'status';
+        )
+    )
+    | filter product='EBS'
+}
+
+export sub aggregate_EC2() {
+    filter product='EC2'
+    | (
+        filter event_type ~ "*";
+        filter event_type !~ "*"
+        |  batch -every :1s:
+        | (
+            put one=1               | add_agg  -agg 'EC2 Instance Count'    -field 'one';
+                                      add_demo -demo 'EC2 Instance Type'    -field 'InstanceType';
+            put state=State['Name'] | add_demo -demo 'EC2 State'            -field 'state';
+                                      add_demo -demo 'EC2 Root Device Type' -field 'RootDeviceType';
+        )
+      )
+    | filter product='EC2'
+}
+
+export sub aggregate_ELB() {
+    filter product='ELB'
+    | (
+        filter event_type ~ "*";
+        filter event_type !~ "*"
+        |  batch -every :1s:
+        | (
+            put one=1                        | add_agg  -agg 'ELB Load Balancer Count'   -field 'one';
+                                               add_demo -demo 'ELB Scheme'               -field 'Scheme';
+            put target=HealthCheck['Target'] | add_demo -demo 'ELB Health Check Target'  -field 'target';
+        )
+    )
+    | filter product='ELB'
+}
+
+export sub aggregate_ElastiCache() {
+    filter product='ElastiCache'
+    | (
+        filter event_type ~ "*";
+        filter event_type !~ "*"
+        |  batch -every :1s:
+        | (
+            put one=1                        | add_agg  -agg 'ElastiCache Cluster Count'      -field 'one';
+                                               add_agg  -agg 'ElastiCache Total Cache Nodes'  -field 'NumCacheNodes';
+                                               add_demo -demo 'ElastiCache Cache Node Type'   -field 'CacheNodeType';
+                                               add_demo -demo 'ElastiCache Engine'            -field 'Engine';
+                                               add_demo -demo 'ElastiCache Cluster Status'    -field 'CacheClusterStatus';
+                                               add_demo -demo 'ElastiCache Num Cache Nodes'   -field 'NumCacheNodes';
+                                               add_demo -demo 'ElastiCache Engine Version'    -field 'EngineVersion';
+        )
+    )
+    | filter product='ElastiCache'
+}
+
+export sub aggregate_Lambda() {
+    filter product='Lambda'
+    | (
+        filter event_type ~ "*";
+        filter event_type !~ "*"
+        |  batch -every :1s:
+        | (
+            put one=1                        | add_agg  -agg 'Lambda Function Count'          -field 'one';
+                                               add_agg  -agg 'Lambda Total Memory Size'       -field 'MemorySize';
+                                               add_demo -demo 'Lambda Runtime'                -field 'Runtime';
+                                               add_demo -demo 'Lambda Role'                   -field 'Role';
+                                               add_demo -demo 'Lambda Timeout'                -field 'Timeout';
+                                               add_demo -demo 'Lambda Memory Size'            -field 'MemorySize';
+                                               add_demo -demo 'Lambda Version'                -field 'Version';
+                                               add_demo -demo 'Lambda Handler'                -field 'Handler';
+        )
+    )
+    | filter product='Lambda'
+}
+
+export sub aggregate_RDS() {
+    filter product='RDS'
+    | (
+        filter event_type ~ "*";
+        filter event_type !~ "*"
+        |  batch -every :1s:
+        | (
+            put one=1                                    | add_agg  -agg 'RDS DB Count'                      -field 'one';
+                                                           add_agg  -agg 'RDS DB Total Allocated Storage'    -field 'AllocatedStorage';
+                                                           add_agg  -agg 'RDS DB Total Iops'                 -field 'Iops';
+                                                           add_demo -demo 'RDS DB Class'                     -field 'DBInstanceClass';
+                                                           add_demo -demo 'RDS DB Engine'                    -field 'Engine';
+                                                           add_demo -demo 'RDS DB Engine Version'            -field 'EngineVersion';
+                                                           add_demo -demo 'RDS DB License Model'             -field 'LicenseModel';
+                                                           add_demo -demo 'RDS DB Retention Period'          -field 'BackupRetentionPeriod';
+                                                           add_demo -demo 'RDS DB PubliclyAccessible'        -field 'PubliclyAccessible';
+                                                           add_demo -demo 'RDS DB Storage Type'              -field 'StorageType';
+                                                           add_demo -demo 'RDS DB Status'                    -field 'DBInstanceStatus';
+            put replica_status=StatusInfos["Status"]     | add_demo -demo 'RDS DB Read Replica Status'       -field 'replica_status';
+        )
+    )
+    | filter product='RDS'
+}
+
+export sub aggregate_all () {
+    (
+        aggregate_AutoScaling;
+        aggregate_CloudFront;
+        aggregate_EBS;
+        aggregate_EC2;
+        aggregate_ELB;
+        aggregate_ElastiCache;
+        aggregate_Lambda;
+        aggregate_RDS;
+    )
+}
+
+
+

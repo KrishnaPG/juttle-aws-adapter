@@ -22,6 +22,7 @@
     "bluebird": "^3.0.5",
     "extendable-base": "^0.3.1",
     "moment": "^2.10.6",
+    "traverse": "^0.6.6 ",
     "underscore": "^1.8.3"
   },
   "peerDependencies": {
