@@ -65,14 +65,14 @@ The remaining sections of this document describe the output of the aggregation s
 ####Aggregate Metrics
 
 - `aggregate="EBS Volume Count", name=total, value=<count>`: The number of EBS volumes.
-- `aggregate="EBS Volume Total size", name=total, value=<gb>`: The total size of all volumes combined, in GB.
-- `aggregate="EBS Volume Total iops", name=total, value=<iops>`: The total iops capability of all volumes combined, in io ops/sec
+- `aggregate="EBS Volume Total Size", name=total, value=<gb>`: The total size of all volumes combined, in GB.
+- `aggregate="EBS Volume Total Iops", name=total, value=<iops>`: The total iops capability of all volumes combined, in io ops/sec
 
 ####Demographic Metrics
 
 - `demographic="EBS Volume Type", name=<type>, value=<count>`: A breakdown of EBS volumes by type. `<type>` examples are `gp2`, `io1`, `standard`, etc.
 - `demographic="EBS Volume State", name=<state>, value=<count>`: A breakdown of EBS volumes by current state. `<state>` examples are `in-use`, `available`, `creating`, `deleting`, etc.
-- `demographic="EBS Status", name=<status>, value=<count>`: A breakdown of EBS volumes by current status. `<status>` examples are `ok`, `impaired`, `insufficient-data`, etc.
+- `demographic="EBS Volume Status", name=<status>, value=<count>`: A breakdown of EBS volumes by current status. `<status>` examples are `ok`, `impaired`, `insufficient-data`, etc.
 
 ###ELB
 

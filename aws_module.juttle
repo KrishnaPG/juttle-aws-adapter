@@ -175,6 +175,3 @@ export sub aggregate_all () {
         aggregate_RDS;
     )
 }
-
-
-
