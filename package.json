@@ -22,10 +22,11 @@
     "bluebird": "^3.0.5",
     "extendable-base": "^0.3.1",
     "moment": "^2.10.6",
+    "traverse": "^0.6.6 ",
     "underscore": "^1.8.3"
   },
   "peerDependencies": {
-    "juttle": ">=0.3.0"
+    "juttle": ">=0.4.0"
   },
   "devDependencies": {
     "babel-core": "^6.3.21",
