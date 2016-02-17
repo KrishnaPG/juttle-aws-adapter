@@ -129,7 +129,6 @@ describe('aws adapter', function() {
         }
 
         it('basic info', function() {
-            this.timeout(60000);
             return check_juttle({
                 program: 'read aws -from :now: -to :now: | view text'
             })
@@ -143,7 +142,6 @@ describe('aws adapter', function() {
         });
 
         it('aggregate info', function() {
-            this.timeout(60000);
             let aws_module_path = path.join(__dirname, '../aws_module.juttle');
             let awsmod = fs.readFileSync(aws_module_path).toString();
             return check_juttle({
