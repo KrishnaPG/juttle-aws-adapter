@@ -1,6 +1,6 @@
 {
   "name": "juttle-aws-adapter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Juttle adapter for AWS (Amazon Web Services)",
   "keywords": [
     "juttle",
