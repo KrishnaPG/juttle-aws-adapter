@@ -2,9 +2,7 @@
 var _ = require('underscore');
 var path = require('path');
 var fs = require('fs');
-var juttle_test_utils = require('juttle/test/runtime/specs/juttle-test-utils');
-var Juttle = require('juttle/lib/runtime').Juttle;
-var AWSAdapter = require('../');
+var juttle_test_utils = require('juttle/test').utils;
 var check_juttle = juttle_test_utils.check_juttle;
 var expect = require('chai').expect;
 var read_config = require('juttle/lib/config/read-config');
@@ -34,9 +32,11 @@ describe('aws adapter', function() {
             aws_config = JSON.parse(process.env.JUTTLE_AWS_CONFIG);
         }
 
-        var adapter = AWSAdapter(aws_config, Juttle);
+        aws_config.path = path.resolve(__dirname, '..');
 
-        Juttle.adapters.register(adapter.name, adapter);
+        juttle_test_utils.configureAdapter({
+            aws: aws_config
+        });
     });
 
     describe('properly returns an error for invalid arguments like', function() {
@@ -44,9 +44,12 @@ describe('aws adapter', function() {
         it(' a -from in the past', function() {
             return check_juttle({
                 program: 'read aws -from :1 day ago: -to :now: | view table'
+            }).then(() => {
+                throw new Error('Program ran when it should have returned an error');
             })
             .catch(function(err) {
-                expect(err.code).to.equal('RT-ADAPTER-UNSUPPORTED-TIME-OPTION');
+                expect(err.code).to.equal('ADAPTER-UNSUPPORTED-TIME-OPTION');
+                expect(err.message).to.equal('Unsupported value for -from option: can not be before :now:');
             });
         });
 
@@ -130,7 +133,7 @@ describe('aws adapter', function() {
 
         it('basic info', function() {
             return check_juttle({
-                program: 'read aws -from :now: -to :now: | view text'
+                program: 'read aws -from :now: -to :1 second from now: | view text'
             })
             .then(function(result) {
                 expect(result.errors).to.have.length(0);
@@ -145,7 +148,7 @@ describe('aws adapter', function() {
             let aws_module_path = path.join(__dirname, '../aws_module.juttle');
             let awsmod = fs.readFileSync(aws_module_path).toString();
             return check_juttle({
-                program: `import "aws_module.juttle" as AWSMod; read aws -from :now: -to :now: | AWSMod.aggregate_all | view text`,
+                program: `import "aws_module.juttle" as AWSMod; read aws -from :now: -to :1 second from now: | AWSMod.aggregate_all | view text`,
                 modules: {
                     'aws_module.juttle': awsmod
                 }
