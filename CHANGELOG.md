@@ -2,6 +2,7 @@
 This file documents all notable changes to juttle-aws-adapter. The release numbering uses [semantic versioning](http://semver.org).
 
 ## 0.2.0
+Released 2016-02-26
 
 ### Major Changes
 - Update to reflect changes in juttle 0.5.0, including the concept of adapter versioning. This release is compatible with adapter version 0.5.0.
