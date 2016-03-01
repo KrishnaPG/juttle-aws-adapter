@@ -1,6 +1,12 @@
 # Change Log
 This file documents all notable changes to juttle-aws-adapter. The release numbering uses [semantic versioning](http://semver.org).
 
+## 0.2.1
+Released 2016-03-01
+
+### Bug Fixes
+- Properly handle `read aws` when no -from or -to is provided [[#8](https://github.com/juttle/juttle-aws-adapter/issues/8)]
+
 ## 0.2.0
 Released 2016-02-26
 
