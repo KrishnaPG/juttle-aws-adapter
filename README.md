@@ -26,7 +26,7 @@ The adapter supports the following AWS Products:
 
 By default, the adapter returns the raw json results of the AWS API calls for each product's "list items" function (e.g. `EC2.describeInstances`, `ELB.describeLoadBalancers`, etc) as Juttle points. The adapter also monitors the active set of items (EC2 Instances, etc) for each product and emits events when the items change. For example, when a new EC2 instance is added, a "EC2 instance added" event is generated. Also, when anything related to a given item is changed, a "... changed" event is generated.
 
-The `aws` module packaged with the adapter exports several [subgraphs](http://juttle.github.io/juttle/concepts/programming_constructs/#subgraphs) that can be included in Juttle programs to automatically summarize the raw points returned from the AWS API calls. Each product has an `aggregate_all_<product>()` subgraph that summarizes points associated with each product. Additionally, there is an `aggregate_all` subgraph that summarizes for all products.
+The module packaged with the adapter, which can be imported via `import "adapters/aws"`, exports several [subgraphs](http://juttle.github.io/juttle/concepts/programming_constructs/#subgraphs) that can be included in Juttle programs to automatically summarize the raw points returned from the AWS API calls. Each product has an `aggregate_all_<product>()` subgraph that summarizes points associated with each product. Additionally, there is an `aggregate_all` subgraph that summarizes for all products.
 
 The subgraphs summarize the raw points into the following categories.
 - **Demographic Information**: for each product, breakdowns by size, storage class, memory software version, etc.
@@ -39,8 +39,10 @@ The AWS Adapter is very closely related to the [Juttle Cloudwatch Adapter](https
 ## Examples
 
 ```
+import 'adapters/aws' as AWS;
+
 read aws product='EC2'
-    | Adapter.aws.aggregate_EC2
+    | AWS.aggregate_EC2
     | filter demographic='EC2 Instance Type'
     | keep demographic, name, value
     | view table
