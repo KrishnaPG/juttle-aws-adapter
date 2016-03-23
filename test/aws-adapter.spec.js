@@ -1,7 +1,6 @@
 'use strict';
 var _ = require('underscore');
 var path = require('path');
-var fs = require('fs');
 var juttle_test_utils = require('juttle/test').utils;
 var check_juttle = juttle_test_utils.check_juttle;
 var expect = require('chai').expect;
@@ -145,13 +144,9 @@ describe('aws adapter', function() {
         });
 
         it('aggregate info', function() {
-            let aws_module_path = path.join(__dirname, '../aws_module.juttle');
-            let awsmod = fs.readFileSync(aws_module_path).toString();
             return check_juttle({
-                program: `import "aws_module.juttle" as AWSMod; read aws | AWSMod.aggregate_all | view text`,
-                modules: {
-                    'aws_module.juttle': awsmod
-                }
+                program: `import "adapters/aws" as AWS; read aws product="RDS"| AWS.aggregate_all | view text`,
+                moduleResolver: juttle_test_utils.module_resolver({})
             })
             .then(function(result) {
                 expect(result.errors).to.have.length(0);
